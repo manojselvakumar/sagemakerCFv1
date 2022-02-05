@@ -1,0 +1,23 @@
+
+Description: MLOps Pipeline Draft v1
+  
+Parameters:
+  GitHubRepo:
+    Description: Name of your GitHub repository
+    Default: sagemakerCFv1
+    Type: String
+
+  
+Metadata:
+  
+Mappings:
+  
+Conditions:
+  
+Resources:
+
+Transform:
+  
+Outputs:
+
+
