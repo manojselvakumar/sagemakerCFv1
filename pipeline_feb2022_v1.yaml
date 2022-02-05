@@ -6,18 +6,56 @@ Parameters:
     Description: Name of your GitHub repository
     Default: sagemakerCFv1
     Type: String
+  
+  GitHubBranch:
+    Description: Name of your GitHub branch within your repo
+    Default: master
+    Type: String
 
-  
-Metadata:
-  
-Mappings:
-  
-Conditions:
-  
+  GitHubUser:
+    Description: Name of your GitHub Username
+    Default: manojselvakumar
+    Type: String
+
+  GitHubToken:
+    Description: Github OAuthToken that provides access to your repo
+    Default: ""
+    Type: String
+    NoEcho: True
+
+  ModelName:
+    Description: Name of the model for which you want to build the pipeline
+    Default: "nyctaxi"
+    Type: String
+    MinLength: 1
+    MaxLength: 15
+    AllowedPattern: ^[a-z0-9](-*[a-z0-9])* # no UPPERCASE due to S3 naming restrictions
+    ConstraintDescription: Must be lowercase or numbers with a length of 1-15 characters.
+
+
 Resources:
 
-Transform:
-  
-Outputs:
+  # SecretManager to store my GitHub user name and password in an encrypted form. KMSKeyID is the key used to encrypt my credentials
+  GitHubSecret:
+    Type: AWS::SecretsManager::Secret  # Creates a new secret 
+    Properties:
+      Description: !Sub GitHub Secret Token for ${GitHubRepo} — a repository in my GitHub account
+      KmsKeyId: !Ref KMSKey # the ARN, key ID, or alias of the AWS KMS key that Secrets Manager uses to encrypt the secret value in the secret.
+      SecretString: !Sub '{"username":"${GitHubUser}","password":"${GitHubToken}"}' # the text to encrypt and store it in the secret  
 
 
+  KMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: !Sub Master Key for MLOps Pipeline - ${ModelName}
+      KeyPolicy: # The key policy that authorizes use of the KMS key
+        Version: "2012-10-17"
+        Id: !Ref ModelName
+        Statement:
+          - Sid: Allows admin of the key
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - "kms:*"
+            Resource: "*" 
